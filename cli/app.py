@@ -5,6 +5,7 @@ from rich.table import Table
 from cli.banner import show_banner
 from core.analyzer import analyze_password
 from core.wordlist import generate_wordlist
+from core.hashes import generate_hash, verify_hash
 
 app = typer.Typer(help="Password Intelligence Toolkit CLI")
 console = Console()
@@ -51,3 +52,28 @@ def wordlist(seed: str):
 
     for i, word in enumerate(results[:50]):  
         console.print(f"[{i}] {word}")
+
+
+@app.command()
+def hash(text: str, algorithm: str = "sha256"):
+    """Generate hash from text"""
+
+    show_banner()
+
+    result = generate_hash(text, algorithm)
+
+    console.print("\n[bold cyan]Hash Result[/bold cyan]\n")
+    console.print(f"[green]{algorithm}[/green]: {result}")
+
+@app.command()
+def verify(text: str, hash_value: str, algorithm: str = "sha256"):
+    """Verify hash"""
+
+    show_banner()
+
+    result = verify_hash(text, hash_value, algorithm)
+
+    if result:
+        console.print("[bold green]✔ Hash MATCHED[/bold green]")
+    else:
+        console.print("[bold red]✖ Hash NOT matched[/bold red]")
