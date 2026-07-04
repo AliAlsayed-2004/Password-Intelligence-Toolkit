@@ -4,6 +4,7 @@ from rich.table import Table
 
 from cli.banner import show_banner
 from core.analyzer import analyze_password
+from core.wordlist import generate_wordlist
 
 app = typer.Typer(help="Password Intelligence Toolkit CLI")
 console = Console()
@@ -35,3 +36,18 @@ def analyze(password: str):
     table.add_row("Weak Patterns", ", ".join(result["weak_patterns"]) or "None")
 
     console.print(table)
+
+
+@app.command()
+def wordlist(seed: str):
+    """Generate wordlist from seed"""
+
+    show_banner()
+
+    seeds = seed.split(",")
+    results = generate_wordlist(seeds)
+
+    console.print(f"\n[bold green]Generated {len(results)} passwords[/bold green]\n")
+
+    for i, word in enumerate(results[:50]):  
+        console.print(f"[{i}] {word}")
