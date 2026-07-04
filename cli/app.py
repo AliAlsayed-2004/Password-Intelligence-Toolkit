@@ -18,12 +18,14 @@ def start():
     print("\n[+] Welcome to Password Intelligence Toolkit\n")
 
 @app.command()
+@app.command()
 def analyze(password: str):
     """Analyze password strength"""
 
     show_banner()
 
     result = analyze_password(password)
+    attack = result.get("attack", {})
 
     table = Table(title="Password Analysis Report", style="cyan")
 
@@ -35,6 +37,15 @@ def analyze(password: str):
     table.add_row("Score", f"{result['score']} / 100")
     table.add_row("Strength Level", result["level"])
     table.add_row("Weak Patterns", ", ".join(result["weak_patterns"]) or "None")
+    
+    table.add_row("Offline Mid GPU", str(attack.get("offline_mid_gpu", "N/A")))
+    table.add_row("Offline Fast GPU", str(attack.get("offline_fast_gpu", "N/A")))
+    table.add_row("Online Attack", str(attack.get("online_attack", "N/A")))
+    table.add_row("Strength Rating", str(attack.get("strength_rating", "N/A")))
+    
+    if attack.get("recommendations"):
+        recs = " | ".join(attack["recommendations"][:2])  
+        table.add_row("Recommendations", recs)
 
     console.print(table)
 
