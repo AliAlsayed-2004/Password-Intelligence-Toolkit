@@ -103,14 +103,42 @@ def check_breach_command(password: str):
     console.print(f"[dim]Prefix sent to API: {result['prefix_sent']}[/dim]")
 
 @app.command()
-def wordlist(seed: str):
-    from core.wordlist import generate_wordlist
+def wordlist(
+    seed: str,
+    output: str = typer.Option(None, "--output", "-o", help="Save the full wordlist to a file (hashcat/John compatible)."),
+    min_length: int = typer.Option(None, "--min-length", help="Discard candidates shorter than this."),
+    max_length: int = typer.Option(None, "--max-length", help="Discard candidates longer than this."),
+    no_combine: bool = typer.Option(False, "--no-combine", help="Don't combine multiple seeds pairwise (e.g. firstname+lastname)."),
+):
+    """Generate a mutated wordlist from seed word(s).
+
+    Pass multiple comma-separated seeds (e.g. a first name, last name, pet
+    name, birth year) to also get OSINT-style combinations like
+    "johndoe", "john.doe", "jdoe".
+    """
+    from core.wordlist import generate_wordlist, save_wordlist
+
     show_banner()
     seeds = seed.split(",")
-    results = generate_wordlist(seeds)
+    results = generate_wordlist(
+        seeds,
+        combine=not no_combine,
+        min_length=min_length,
+        max_length=max_length,
+    )
+
     console.print(f"\n[bold green]Generated {len(results)} passwords[/bold green]\n")
-    for i, word in enumerate(results[:30]):
-        console.print(f"[{i}] {word}")
+
+    if output:
+        count = save_wordlist(results, output)
+        console.print(f"[bold cyan]Saved {count} candidates to {output}[/bold cyan]")
+        console.print(f"[dim]hashcat: hashcat -a 0 -m <mode> <hash_file> {output}[/dim]")
+        console.print(f"[dim]John:    john --wordlist={output} <hash_file>[/dim]")
+    else:
+        for i, word in enumerate(results[:30]):
+            console.print(f"[{i}] {word}")
+        if len(results) > 30:
+            console.print(f"[dim]...and {len(results) - 30} more. Use --output to save the full list.[/dim]")
 
 
 @app.command()
