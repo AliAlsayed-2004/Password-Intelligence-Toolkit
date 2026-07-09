@@ -44,3 +44,38 @@ def classify(score: int) -> str:
         return "STRONG"
     else:
         return "VERY STRONG"
+
+
+# zxcvbn's 0-4 score mapped onto the same 0-100 scale used by advanced_score,
+# so the two engines can be compared/combined on equal footing.
+ZXCVBN_SCORE_TO_100 = {0: 5, 1: 25, 2: 50, 3: 75, 4: 95}
+ZXCVBN_SCORE_TO_LEVEL = {0: "VERY WEAK", 1: "WEAK", 2: "MEDIUM", 3: "STRONG", 4: "VERY STRONG"}
+LEVEL_RANK = {"VERY WEAK": 0, "WEAK": 1, "MEDIUM": 2, "STRONG": 3, "VERY STRONG": 4}
+
+
+def reconcile_score(custom_score: int, zxcvbn_score: int) -> dict:
+    """Combine the naive charset/pattern score with zxcvbn's real-world
+    dictionary-aware score.
+
+    zxcvbn is far better at catching disguised weak passwords (e.g.
+    "P@ssw0rd123" scores high on raw entropy but is a well-known password
+    with leet substitutions). Rather than pick one engine, we take the more
+    conservative (weaker) verdict of the two -- a password is only as
+    strong as its weakest assessment.
+    """
+    zxcvbn_as_100 = ZXCVBN_SCORE_TO_100.get(zxcvbn_score, 50)
+    custom_level = classify(custom_score)
+    zxcvbn_level = ZXCVBN_SCORE_TO_LEVEL.get(zxcvbn_score, "MEDIUM")
+
+    final_score = min(custom_score, zxcvbn_as_100)
+    final_level = custom_level if LEVEL_RANK[custom_level] <= LEVEL_RANK[zxcvbn_level] else zxcvbn_level
+
+    return {
+        "final_score": final_score,
+        "final_level": final_level,
+        "custom_score": custom_score,
+        "custom_level": custom_level,
+        "zxcvbn_score": zxcvbn_score,
+        "zxcvbn_level": zxcvbn_level,
+        "engines_agree": custom_level == zxcvbn_level,
+    }

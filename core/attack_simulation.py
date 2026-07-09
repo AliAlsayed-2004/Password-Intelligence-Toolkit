@@ -3,9 +3,9 @@ from core.entropy import detect_charset
 from core.patterns import has_sequence, has_repetition, keyboard_weak, is_known_weak
 
 GUESSES_PER_SECOND = {
-    "offline_fast_gpu": 1e10,   
-    "offline_mid_gpu": 1e8,    
-    "online_attack": 5        
+    "offline_fast_gpu": 1e10,   # 10 مليار
+    "offline_mid_gpu": 1e8,     # 100 مليون
+    "online_attack": 5          # أقل واقعية (غالباً أقل من 10)
 }
 
 def estimate_base_entropy(password: str) -> float:
@@ -27,7 +27,7 @@ def calculate_pattern_penalty(password: str) -> float:
     penalty = 1.0
     
     if is_known_weak(password):
-        penalty *= 0.05        
+        penalty *= 0.05          # جداً ضعيف
     elif has_sequence(password):
         penalty *= 0.15
     elif has_repetition(password):
@@ -35,6 +35,7 @@ def calculate_pattern_penalty(password: str) -> float:
     elif keyboard_weak(password):
         penalty *= 0.25
     
+    # مكافأة الطول
     if len(password) >= 16:
         penalty *= 2.0
     elif len(password) >= 12:
