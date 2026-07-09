@@ -13,7 +13,6 @@ def advanced_score(password: str, entropy: float) -> int:
     if "123" in password:
         score -= 25
 
-    # entropy (small influence only)
     if entropy < 20:
         score -= 30
     elif entropy < 40:
