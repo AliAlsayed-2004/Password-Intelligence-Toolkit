@@ -1,18 +1,33 @@
 from rich.console import Console
 from rich.panel import Panel
+from rich.text import Text
 
 console = Console()
 
+VERSION = "v1.0.0"
+
+LOGO = r""" ██████╗███████╗██████╗ ██████╗ ███████╗██████╗ ██╗   ██╗███████╗
+██╔════╝██╔════╝██╔══██╗██╔══██╗██╔════╝██╔══██╗██║   ██║██╔════╝
+██║     █████╗  ██████╔╝██████╔╝█████╗  ██████╔╝██║   ██║███████╗
+██║     ██╔══╝  ██╔══██╗██╔══██╗██╔══╝  ██╔══██╗██║   ██║╚════██║
+╚██████╗███████╗██║  ██║██████╔╝███████╗██║  ██║╚██████╔╝███████║
+ ╚═════╝╚══════╝╚═╝  ╚═╝╚═════╝ ╚══════╝╚═╝  ╚═╝ ╚═════╝ ╚══════╝"""
+
+
 def show_banner():
-    banner = """
-██████╗  █████╗ ███████╗███████╗██████╗ 
-██╔══██╗██╔══██╗██╔════╝██╔════╝██╔══██╗
-██████╔╝███████║███████╗█████╗  ██████╔╝
-██╔═══╝ ██╔══██║╚════██║██╔══╝  ██╔══██╗
-██║     ██║  ██║███████║███████╗██║  ██║
-╚═╝     ╚═╝  ╚═╝╚══════╝╚══════╝╚═╝  ╚═╝
+    body = Text()
+    body.append(LOGO, style="bold red")
+    body.append("\n\n")
+    body.append("  Password Intelligence Toolkit (PIT)", style="bold cyan")
+    body.append(f"   {VERSION}\n", style="dim white")
+    body.append(
+        "  Dual-engine strength analysis  ::  breach intel  ::  hash cracking  ::  wordlist forge\n",
+        style="white",
+    )
+    body.append("\n")
+    body.append(
+        "  [!] For authorized security testing only. Unauthorized use is illegal.",
+        style="bold yellow",
+    )
 
- Password Intelligence Toolkit (PIT)
-    """
-
-    console.print(Panel(banner, style="bold cyan"))
+    console.print(Panel(body, border_style="bold red", expand=False))

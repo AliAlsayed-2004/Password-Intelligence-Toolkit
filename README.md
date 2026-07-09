@@ -1,4 +1,4 @@
-# Password Intelligence Toolkit (PIT)
+# CERBERUS -- Password Intelligence Toolkit (PIT)
 
 A red-team CLI toolkit for password auditing, breach checking, hash cracking, and
 wordlist generation — built to help security professionals evaluate real-world
@@ -181,7 +181,12 @@ pip install pytest
 pytest tests/ -v
 ```
 
+## Roadmap
 
+- Bulk/audit mode for scanning a file of passwords and producing a statistics report
+- JSON/CSV export for `analyze` results
+- Salted-hash support in `crack`
+- hashcat `.rule` file support in `wordlist`
 
 ## Disclaimer
 

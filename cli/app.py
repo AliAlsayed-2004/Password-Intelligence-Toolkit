@@ -5,13 +5,13 @@ from rich.table import Table
 from cli.banner import show_banner
 from core.analyzer import analyze_password
 
-app = typer.Typer(help="Password Intelligence Toolkit CLI")
+app = typer.Typer(help="CERBERUS -- Password Intelligence Toolkit (PIT) CLI")
 console = Console()
 
 @app.command()
 def start():
     show_banner()
-    print("\n[+] Welcome to Password Intelligence Toolkit\n")
+    print("\n[+] Welcome to CERBERUS -- Password Intelligence Toolkit\n")
 
 @app.command()
 def analyze(

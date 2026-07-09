@@ -102,9 +102,9 @@ def combine_seeds(seeds: list[str]):
         results.add(a + "_" + b)
         results.add(a + "-" + b)
         if b:
-            results.add(a + b[0])   
+            results.add(a + b[0])   # john + d
         if a:
-            results.add(a[0] + b)   
+            results.add(a[0] + b)   # j + doe
     return list(results)
 
 
