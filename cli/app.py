@@ -112,5 +112,93 @@ def wordlist(seed: str):
     for i, word in enumerate(results[:30]):
         console.print(f"[{i}] {word}")
 
+
+@app.command()
+def hash(
+    text: str,
+    algo: str = typer.Option("sha256", "--algo", "-a", help="md5, sha1, sha224, sha256, sha384, sha512"),
+    all: bool = typer.Option(False, "--all", help="Show the hash under every supported algorithm."),
+):
+    """Generate the hash of a piece of text."""
+    from core.hashes import generate_hash, SUPPORTED_ALGORITHMS
+
+    show_banner()
+    table = Table(title="Hash Output", style="cyan")
+    table.add_column("Algorithm", style="bold")
+    table.add_column("Digest", style="green")
+
+    algos = SUPPORTED_ALGORITHMS if all else [algo]
+    for a in algos:
+        try:
+            table.add_row(a, generate_hash(text, a))
+        except ValueError:
+            table.add_row(a, "[red]unsupported[/red]")
+
+    console.print(table)
+
+
+@app.command()
+def crack(
+    hash_value: str,
+    wordlist_file: str = typer.Option(
+        None, "--wordlist", "-w", help="Path to a plaintext wordlist file (one candidate per line)."
+    ),
+    seed: str = typer.Option(
+        None, "--seed", "-s", help="Comma-separated seed word(s) to mutate on the fly via the wordlist generator, instead of a file."
+    ),
+    algo: str = typer.Option(
+        None, "--algo", "-a", help="Force a specific algorithm instead of auto-detecting from hash length."
+    ),
+):
+    """Dictionary attack against a hash you're authorized to audit.
+
+    Provide either --wordlist (a file) or --seed (mutated on the fly).
+    Use this to check whether a password you control would survive a
+    basic wordlist attack -- not against systems you don't own.
+    """
+    from core.hashes import crack_hash, identify_hash_algorithm
+    from core.wordlist import generate_wordlist
+
+    show_banner()
+
+    if not wordlist_file and not seed:
+        console.print("[bold red][!] Provide either --wordlist <file> or --seed <word(s)>.[/bold red]")
+        raise typer.Exit(code=1)
+
+    guessed = identify_hash_algorithm(hash_value)
+    if algo:
+        console.print(f"[dim]Forcing algorithm: {algo}[/dim]")
+    elif guessed:
+        console.print(f"[dim]Auto-detected possible algorithm(s) from hash length: {', '.join(guessed)}[/dim]")
+    else:
+        console.print("[dim]Could not detect algorithm from hash format -- trying all supported algorithms.[/dim]")
+
+    if wordlist_file:
+        try:
+            with open(wordlist_file, "r", encoding="utf-8", errors="ignore") as f:
+                candidates = [line.strip() for line in f if line.strip()]
+        except OSError as exc:
+            console.print(f"[bold red][!] Could not read wordlist file: {exc}[/bold red]")
+            raise typer.Exit(code=1)
+        console.print(f"[dim]Loaded {len(candidates)} candidates from {wordlist_file}[/dim]\n")
+    else:
+        seeds = seed.split(",")
+        candidates = generate_wordlist(seeds)
+        console.print(f"[dim]Generated {len(candidates)} candidates from seed(s): {seed}[/dim]\n")
+
+    result = crack_hash(hash_value, candidates, algorithm=algo)
+
+    if result["cracked"]:
+        console.print(
+            f"[bold green][+] CRACKED after {result['attempts']} attempts![/bold green]\n"
+            f"    Plaintext : [bold]{result['plaintext']}[/bold]\n"
+            f"    Algorithm : {result['algorithm']}"
+        )
+    else:
+        console.print(
+            f"[bold yellow][-] Not found in {result['attempts']} attempts. "
+            "Try a bigger wordlist or different seeds.[/bold yellow]"
+        )
+
 if __name__ == "__main__":
     app()
